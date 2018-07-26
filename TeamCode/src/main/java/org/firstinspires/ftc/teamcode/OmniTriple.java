@@ -94,9 +94,9 @@ public class OmniTriple extends OpMode
       double dif = Math.abs(des-pAct);
       if (dif > 0.3) {
         if (des > pAct) {
-          pAct = pAct + 0.1;
+          pAct += 0.1;
         } else if (des < pAct) {
-          pAct = pAct - 0.1;
+          pAct -= 0.1;
         }
       }  else {
         pAct = des;
@@ -109,6 +109,9 @@ public class OmniTriple extends OpMode
     double leftPower = 0;
     double rightPower = 0;
     double centrePower = 0;
+    double leftVel = 0;
+    double rightVel = 0;
+    double centreVel = 0;
     double eolicoPower = 0;
     boolean presd = false;
     double brazoPosition = 1;
@@ -122,10 +125,11 @@ public class OmniTriple extends OpMode
         double cajasPower;
         double tiempoActual = runtime.milliseconds();
 
+        //Set desired movement of the robot
         double drive = -gamepad1.left_stick_y;
-        double turn  =  gamepad1.left_stick_x;
-        double leftDeseado    = Range.clip(drive + turn, -1.0, 1.0);
-        double rightDeseado   = Range.clip(drive - turn, -1.0, 1.0);
+        double turn = gamepad1.left_stick_x;
+        double leftDeseado = Range.clip(drive + turn, -1.0, 1.0);
+        double rightDeseado = Range.clip(drive - turn, -1.0, 1.0);
         double centreDeseado = gamepad1.right_stick_x;
 
         //Acceleration control
@@ -138,13 +142,17 @@ public class OmniTriple extends OpMode
 
         // Control power of wheels.
         if (gamepad1.right_trigger > 0) {
-          leftPower = leftPower * 0.75;
-          rightPower = rightPower * 0.75;
-          centrePower = centrePower * 0.75;
-        } else if(gamepad1.left_trigger>0){
-          leftPower = leftPower * 0.25 + leftPower * 0.5 * (1 - gamepad1.left_trigger);
-          rightPower = rightPower * 0.25 + rightPower * 0.5 * (1 - gamepad1.left_trigger);
-          centrePower = centrePower * 0.25 + centrePower * 0.5 * (1 - gamepad1.left_trigger);
+          leftVel = leftPower * 0.75;
+          rightVel = rightPower * 0.75;
+          centreVel = centrePower * 0.75;
+        } else if(gamepad1.left_trigger > 0){
+          leftVel = leftPower * 0.25 + leftPower * 0.5 * (1 - gamepad1.left_trigger);
+          rightVel = rightPower * 0.25 + rightPower * 0.5 * (1 - gamepad1.left_trigger);
+          centreVel = centrePower * 0.25 + centrePower * 0.5 * (1 - gamepad1.left_trigger);
+        } else {
+          leftVel = leftPower;
+          rightVel = rightPower;
+          centreVel = centrePower;
         }
 
         // Move the lift.
@@ -179,7 +187,6 @@ public class OmniTriple extends OpMode
           }
           presd1 = false;
         }
-
         //Grab or leave the solar panel
         if (gamepad1.right_bumper) {
           presd2 = true;
@@ -202,9 +209,9 @@ public class OmniTriple extends OpMode
         }
 
         // Send calculated power to wheels
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
-        centreDrive.setPower(centrePower);
+        leftDrive.setPower(leftVel);
+        rightDrive.setPower(rightVel);
+        centreDrive.setPower(centreVel);
         elevadorDrive.setPower(elevadorPower);
         //eolicoDrive.setPower(eolicoPower);
         //brazoServo.setPosition(brazoPosition);
@@ -214,7 +221,6 @@ public class OmniTriple extends OpMode
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", rightPower);
     }
 
     //Code to run ONCE after the driver hits STOP
